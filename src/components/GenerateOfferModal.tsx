@@ -20,26 +20,45 @@ export default function GenerateOfferModal({ candidate, onClose, onRefresh }: an
         console.log("responseoffer", response)
         if (response.ok) {
             const { offerUrl, ndaUrl } = await response.json();
-
-            // Helper to trigger download
-            const downloadFile = (url: string, filename: string) => {
-                const link = document.createElement("a");
-                link.href = url;
-                link.setAttribute("download", filename);
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
-            };
-
             // Trigger both downloads
-            downloadFile(offerUrl, `Offer_${candidate.name}.pdf`);
-            // downloadFile(ndaUrl, `NDA_${candidate.name}.pdf`);
+            // 1. Await both downloads sequentially
+            // This ensures the code waits for the fetch-blob-link process to complete
+            await downloadFile(offerUrl, `Offer_${candidate.name}.pdf`);
+            await downloadFile(ndaUrl, `NDA_${candidate.name}.pdf`);
 
-            // onRefresh();
-            // onClose();
+            // 2. These only trigger after the downloads above succeed
+            onRefresh();
+            onClose();
         }
     };
 
+    const downloadFile = async (url: string, filename: string) => {
+        try {
+            // 1. Fetch the file as a blob
+            const response = await fetch(url);
+            const blob = await response.blob();
+
+            // 2. Create a local URL for the blob
+            const blobUrl = window.URL.createObjectURL(blob);
+
+            // 3. Create the temporary link
+            const link = document.createElement("a");
+            link.href = blobUrl;
+            link.setAttribute("download", filename);
+
+            // 4. Append and click
+            document.body.appendChild(link);
+            link.click();
+
+            // 5. Cleanup
+            link.remove();
+            window.URL.revokeObjectURL(blobUrl);
+        } catch (error) {
+            console.error("Download failed:", error);
+            // Fallback: if fetch fails (CORS issues), just open the link
+            window.open(url, "_blank");
+        }
+    };
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm">
             <div className="w-full max-w-[640px] bg-white rounded-xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden animate-in fade-in zoom-in duration-300">

@@ -1,7 +1,7 @@
 import { put } from '@vercel/blob';
 import { renderToBuffer } from '@react-pdf/renderer';
 import { OfferLetterTemplate } from '@/components/pdf/OfferLetterTemplate';
-// import { NDATemplate } from '@/components/pdf/NDATemplate'; // Assuming you have this
+import { NDATemplate } from '@/components/pdf/NDATemplate';
 import { NextResponse } from 'next/server';
 import { Candidate } from "@/models/Candidate";
 export async function POST(req: Request) {
@@ -12,7 +12,7 @@ export async function POST(req: Request) {
   try {
     // 1. Generate PDFs as buffers
     const offerBuffer = await renderToBuffer(<OfferLetterTemplate data={body} />);
-    // const ndaBuffer = await renderToBuffer(<NDATemplate data={body} />);
+    const ndaBuffer = await renderToBuffer(<NDATemplate data={body} />);
 
     // 2. Upload both to Vercel Blob
     const offerBlob = await put(`offers/${candidateId}-offer.pdf`, offerBuffer, {
@@ -21,16 +21,18 @@ export async function POST(req: Request) {
       addRandomSuffix: true, // This generates a unique URL every time
     });
 
-    // const ndaBlob = await put(`offers/${candidateId}-nda.pdf`, ndaBuffer, {
-    //   access: 'public',
-    //   contentType: 'application/pdf',
-    // });
+    const ndaBlob = await put(`offers/${candidateId}-nda.pdf`, ndaBuffer, {
+      access: 'public',
+      contentType: 'application/pdf',
+      addRandomSuffix: true, // This generates a unique URL every time
+
+    });
 
     await Candidate.findByIdAndUpdate(candidateId, {
       $set: {
         status: 'Offer Sent',
         offerLetterUrl: offerBlob.url,
-        // ndaUrl: ndaBlob.url
+        ndaUrl: ndaBlob.url
       },
       $push: {
         timeline: {
@@ -44,7 +46,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       success: true,
       offerUrl: offerBlob.url,
-      // ndaUrl: ndaBlob.url 
+      ndaUrl: ndaBlob.url
     });
   } catch (error) {
     console.error("PDF Generation Error:", error);
