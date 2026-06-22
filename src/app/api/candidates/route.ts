@@ -3,6 +3,7 @@ import connectToDatabase from "@/lib/mongodb";
 import { Candidate } from "@/models/Candidate";
 import "@/models/JobOpening";
 import { put } from "@vercel/blob";
+import crypto from 'crypto';
 export async function GET(req: NextRequest) {
     await connectToDatabase();
 
@@ -79,14 +80,13 @@ export async function POST(req: NextRequest) {
         const formData = await req.formData();
         const file = formData.get("resume") as File | null;
         
-        // Extract other fields (assuming your frontend sends these)
         const name = formData.get("name") as string;
         const email = formData.get("email") as string;
         const jobOpening = formData.get("jobOpening") as string;
 
         let resumeUrl = "";
 
-        // 2. Upload File to Vercel Blob if it exists
+        // 2. Upload File to Vercel Blob
         if (file) {
             const blob = await put(file.name, file, {
                 access: 'public',
@@ -94,19 +94,72 @@ export async function POST(req: NextRequest) {
             resumeUrl = blob.url;
         }
 
-        // 3. Create Candidate in MongoDB
+        // 3. Generate secure magic link token and expiration (14 days)
+        const token = crypto.randomBytes(32).toString('hex');
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 14);
+
+        // 4. Create Candidate in MongoDB
         const newCandidate = await Candidate.create({
             name,
             email,
             jobOpening,
             resumeUrl,
-            status: "Applied", // Default status
-            timeline: [{ status: "Applied", timestamp: new Date(), note: "Initial application" }]
+            status: "Applied",
+            timeline: [{ status: "Applied", timestamp: new Date(), note: "Initial application" }],
+            magicLinkToken: token,       // Added
+            magicLinkExpiresAt: expiresAt // Added
         });
 
-        return NextResponse.json(newCandidate, { status: 201 });
+        // Return candidate along with the generated magic link for the UI
+        const magicLink = `${process.env.NEXT_PUBLIC_BASE_URL}/apply/${token}`;
+        
+        return NextResponse.json({ 
+            candidate: newCandidate, 
+            magicLink 
+        }, { status: 201 });
+
     } catch (error) {
         console.error("Error creating candidate:", error);
         return NextResponse.json({ error: "Failed to create candidate" }, { status: 500 });
     }
 }
+// export async function POST(req: NextRequest) {
+//     await connectToDatabase();
+
+//     try {
+//         // 1. Parse the FormData
+//         const formData = await req.formData();
+//         const file = formData.get("resume") as File | null;
+        
+//         // Extract other fields (assuming your frontend sends these)
+//         const name = formData.get("name") as string;
+//         const email = formData.get("email") as string;
+//         const jobOpening = formData.get("jobOpening") as string;
+
+//         let resumeUrl = "";
+
+//         // 2. Upload File to Vercel Blob if it exists
+//         if (file) {
+//             const blob = await put(file.name, file, {
+//                 access: 'public',
+//             });
+//             resumeUrl = blob.url;
+//         }
+
+//         // 3. Create Candidate in MongoDB
+//         const newCandidate = await Candidate.create({
+//             name,
+//             email,
+//             jobOpening,
+//             resumeUrl,
+//             status: "Applied", // Default status
+//             timeline: [{ status: "Applied", timestamp: new Date(), note: "Initial application" }]
+//         });
+
+//         return NextResponse.json(newCandidate, { status: 201 });
+//     } catch (error) {
+//         console.error("Error creating candidate:", error);
+//         return NextResponse.json({ error: "Failed to create candidate" }, { status: 500 });
+//     }
+// }

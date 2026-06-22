@@ -3,11 +3,11 @@ import { renderToBuffer } from '@react-pdf/renderer';
 import { OfferLetterTemplate } from '@/components/pdf/OfferLetterTemplate';
 // import { NDATemplate } from '@/components/pdf/NDATemplate'; // Assuming you have this
 import { NextResponse } from 'next/server';
-
+import { Candidate } from "@/models/Candidate";
 export async function POST(req: Request) {
   const body = await req.json();
   console.log("body", body);
-  const { candidateId, name } = body;
+  const { candidateId, name, role } = body;
 
   try {
     // 1. Generate PDFs as buffers
@@ -26,17 +26,20 @@ export async function POST(req: Request) {
     //   contentType: 'application/pdf',
     // });
 
-    // 3. Update your MongoDB record
-    // Ensure you save both URLs so they can be rendered in the UI later
-    /* 
-    await db.collection('interviews').updateOne({ _id: body.interviewId }, { 
-      $set: { 
-        status: 'Offer Sent', 
-        offerUrl: offerBlob.url,
+    await Candidate.findByIdAndUpdate(candidateId, {
+      $set: {
+        status: 'Offer Sent',
+        offerLetterUrl: offerBlob.url,
         // ndaUrl: ndaBlob.url
-      } 
+      },
+      $push: {
+        timeline: {
+          status: 'Offer Sent',
+          timestamp: new Date(),
+          note: `Offer letter generated for the role: ${role}`
+        }
+      }
     });
-    */
 
     return NextResponse.json({
       success: true,

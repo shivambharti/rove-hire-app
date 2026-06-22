@@ -1,34 +1,25 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { X, Upload, FileText, Trash2, UserPlus, Copy, Check, ChevronDown, Loader2 } from "lucide-react";
+import { X, Upload, FileText, Trash2, UserPlus, Loader2, Check, Copy } from "lucide-react";
 
 export default function AddCandidateModal({ onClose }: { onClose: () => void }) {
   const [file, setFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [copied, setCopied] = useState(false);
   
-  // Form refs for easy data access
+  // NEW: State for Success UI
+  const [successData, setSuccessData] = useState<{ magicLink: string; name: string } | null>(null);
+  
   const nameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const jobRef = useRef<HTMLSelectElement>(null);
-
   const [jobOpenings, setJobOpenings] = useState<{ _id: string; title: string, status: string }[]>([]);
-  const [isLoadingJobs, setIsLoadingJobs] = useState(true);
 
   useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        const response = await fetch("/api/jobOpenings");
-        const data = await response.json();
-        setJobOpenings(data);
-      } catch (error) {
-        console.error("Failed to fetch jobs:", error);
-      } finally {
-        setIsLoadingJobs(false);
-      }
-    };
-    fetchJobs();
+    fetch("/api/jobOpenings")
+      .then(res => res.json())
+      .then(setJobOpenings)
+      .catch(console.error);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,18 +39,57 @@ export default function AddCandidateModal({ onClose }: { onClose: () => void }) 
       });
 
       if (response.ok) {
-        alert("Candidate added successfully!");
-        onClose();
+        const data = await response.json();
+        // Set success state with data from API
+        setSuccessData({ magicLink: data.magicLink, name: nameRef.current?.value || "Candidate" });
       } else {
-        throw new Error("Failed to save candidate");
+        throw new Error("Failed to save");
       }
     } catch (error) {
-      console.error(error);
       alert("Error saving candidate.");
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const copyToClipboard = () => {
+    if (successData?.magicLink) {
+      navigator.clipboard.writeText(successData.magicLink);
+      alert("Link copied!");
+    }
+  };
+
+  // --- RENDER SUCCESS VIEW ---
+  if (successData) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4">
+        <section className="bg-white w-full max-w-[560px] rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+          <div className="h-1 bg-[#ad2c00] w-full"></div>
+          <div className="p-8 flex flex-col items-center text-center">
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
+              <Check className="w-10 h-10 text-green-600" />
+            </div>
+            <h3 className="text-xl font-bold mb-2">Candidate successfully added!</h3>
+            <p className="text-gray-500 mb-8">{successData.name} has been added to the pipeline.</p>
+            
+            <div className="w-full bg-gray-50 border rounded-lg p-6 mb-8 text-left">
+              <p className="text-sm font-bold text-[#ad2c00] uppercase mb-2">Candidate Magic Link</p>
+              <div className="flex gap-2">
+                <code className="flex-1 bg-white border rounded px-3 py-2 text-sm truncate">{successData.magicLink}</code>
+                <button onClick={copyToClipboard} className="bg-[#ad2c00] text-white px-4 rounded-lg flex items-center gap-2">
+                  <Copy size={16} /> Copy
+                </button>
+              </div>
+            </div>
+            
+            <button onClick={onClose} className="w-full border py-3 rounded-lg hover:bg-gray-50 font-bold">
+              Close
+            </button>
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4">

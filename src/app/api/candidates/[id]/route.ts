@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import connectToDatabase from "@/lib/mongodb";
 import { Candidate } from "@/models/Candidate";
+import { Interview } from "@/models/Interview";
 
 // GET: Fetch a single candidate by ID
 export async function GET(
@@ -14,19 +15,28 @@ export async function GET(
         // Fetch candidate and populate the job reference
         const candidate = await Candidate.findById(id)
             .populate("jobOpening")
-            .lean(); // Returns plain JS object for easy manipulation
+            .lean(); 
 
         if (!candidate) {
             return NextResponse.json({ error: "Candidate not found" }, { status: 404 });
         }
 
-        // Sort and limit in memory - simple and fast for small arrays
+        // Sort timeline
         if (candidate.timeline) {
-            candidate.timeline = [...candidate.timeline] // Copy to avoid mutation
-                .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+            candidate.timeline = [...candidate.timeline]
+                .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
         }
 
-        return NextResponse.json(candidate, { status: 200 });
+        // Fetch interviews for this candidate
+        const interviews = await Interview.find({ candidateId: id }).lean();
+        
+        // Combine candidate data with the fetched interviews
+        const responseData = {
+            ...candidate,
+            interviews // Now the interviews are included in the JSON response
+        };
+
+        return NextResponse.json(responseData, { status: 200 });
     } catch (error) {
         console.error("Error fetching candidate:", error);
         return NextResponse.json({ error: "Failed to fetch candidate" }, { status: 500 });

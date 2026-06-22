@@ -191,38 +191,6 @@ export default function CandidatePipelineDashboard() {
         </div>
       </div>
 
-      {/* Bottom Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-2 bg-white border border-[#E2E8F0] rounded-xl p-6">
-          <h3 className="font-bold mb-4">Recent Feedback</h3>
-          <div className="space-y-4">
-            <div className="flex gap-4 p-3 hover:bg-gray-50 rounded-xl transition-all cursor-pointer">
-              <div className="w-12 h-12 rounded-lg bg-gray-200" />
-              <div>
-                <p className="font-bold text-sm">David Chen <span className="text-gray-400 font-normal text-xs">• 2 hours ago</span></p>
-                <p className="text-sm italic my-1">"Alex Mercer's technical assessment was outstanding. Let's move them to the final executive round immediately."</p>
-                <div className="flex items-center gap-4 mt-2">
-                  <span className="text-[#ad2c00] text-xs font-semibold flex items-center gap-1"><ThumbsUp size={12} /> Approved</span>
-                  <span className="text-gray-500 text-xs">Candidate: Alex Mercer</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white border border-[#E2E8F0] rounded-xl p-6">
-          <div className="flex justify-between mb-4">
-            <h3 className="font-bold">Upcoming</h3>
-            <span className="text-xs text-[#ad2c00] cursor-pointer hover:underline">View All</span>
-          </div>
-          <div className="space-y-3">
-            <div className="p-3 border rounded-lg hover:border-[#ad2c00] transition-colors">
-              <p className="font-bold text-sm">Final Review</p>
-              <p className="text-xs text-gray-500">Maya Nguyen • 10:00 AM</p>
-              <span className="inline-block mt-2 px-2 py-0.5 bg-gray-100 text-[10px] rounded uppercase font-semibold text-gray-600">Zoom</span>
-            </div>
-          </div>
-        </div>
-      </div>
       {showModal && <AddCandidateModal onClose={() => setShowModal(false)} />}
 
     </div>

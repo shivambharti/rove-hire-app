@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
-
+import "./JobOpening"; // Ensure the model is registered
 const TimelineEventSchema = new Schema({
     status: { type: String, required: true },
     timestamp: { type: Date, default: Date.now },
@@ -16,7 +16,9 @@ const CandidateSchema = new Schema({
     },
     jobOpening: { type: Schema.Types.ObjectId, ref: 'JobOpening', required: true },
     resumeUrl: { type: String },
-
+    offerLetterUrl: { type: String },
+    ndaUrl: { type: String },
+    
     // New Optional Fields
     phoneNumber: { type: String },
     currentLocation: { type: String },
@@ -25,7 +27,10 @@ const CandidateSchema = new Schema({
     salaryExpectation: { type: String },
     linkedinUrl: { type: String },
     // Timeline array: newest events first
-    timeline: [TimelineEventSchema]
+    timeline: [TimelineEventSchema],
+    magicLinkToken: { type: String, index: true }, // Index for fast lookup
+    magicLinkExpiresAt: { type: Date },
+    isTokenUsed: { type: Boolean, default: false }
 }, { timestamps: true });
 
 export const Candidate = mongoose.models.Candidate || mongoose.model('Candidate', CandidateSchema);

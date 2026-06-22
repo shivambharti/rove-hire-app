@@ -13,7 +13,6 @@ export default function Sidebar() {
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Job Openings", href: "/jobs", icon: Briefcase },
     { name: "Interviews", href: "/interviews", icon: CalendarDays },
-    { name: "Settings", href: "/settings", icon: Settings },
   ];
 
   return (
@@ -33,11 +32,10 @@ export default function Sidebar() {
             <Link
               key={item.name}
               href={item.href}
-              className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md transition-all relative group ${
-                isActive
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md transition-all relative group ${isActive
                   ? "text-[#9E3E1A] bg-[#9E3E1A]/5 font-semibold"
                   : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
-              }`}
+                }`}
             >
               {isActive && <div className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-[#9E3E1A] rounded-r" />}
               <Icon className={`w-5 h-5 shrink-0 ${isActive ? "text-[#9E3E1A]" : "text-zinc-400 group-hover:text-zinc-500"}`} />
@@ -52,9 +50,9 @@ export default function Sidebar() {
         <div className="flex items-center justify-between p-2 rounded-lg bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200/60 dark:border-zinc-800">
           <div className="flex items-center gap-3 overflow-hidden">
             <div className="w-9 h-9 rounded-md overflow-hidden bg-zinc-200 shrink-0">
-              <div 
-                className="w-full h-full bg-cover bg-center" 
-                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=150&auto=format&fit=crop')` }} 
+              <div
+                className="w-full h-full bg-cover bg-center"
+                style={{ backgroundImage: `url('https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=150&auto=format&fit=crop')` }}
               />
             </div>
             <div className="flex flex-col min-w-0">
@@ -62,9 +60,9 @@ export default function Sidebar() {
               <span className="text-[10px] text-zinc-500 truncate">Senior Recruiter</span>
             </div>
           </div>
-          
+
           {/* Logout Action */}
-          <button 
+          <button
             onClick={() => signOut({ callbackUrl: "/login" })}
             className="p-1.5 text-zinc-400 hover:text-[#9E3E1A] hover:bg-red-50 rounded-md transition-colors"
             title="Log Out"

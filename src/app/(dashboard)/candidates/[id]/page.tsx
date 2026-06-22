@@ -97,7 +97,15 @@ export default function CandidateProfile() {
                         </div>
                     </div>
                     <div className="flex flex-col gap-3">
-                        <button className="bg-[#ad2c00] text-white px-6 py-3 rounded-lg font-bold" onClick={() => setShowOfferModal(true)}>Generate Offer</button>
+                        {/* Only show if status is Interview Scheduled or Offer Sent (Exclude Hired/Rejected) */}
+                        {['Interview Scheduled', 'Offer Sent'].includes(candidate.status) && (
+                            <button
+                                className="bg-[#ad2c00] text-white px-6 py-3 rounded-lg font-bold hover:bg-[#8e2400] transition-colors"
+                                onClick={() => setShowOfferModal(true)}
+                            >
+                                {candidate.offerLetterUrl ? "Regenerate Offer Documents" : "Generate Offer Documents"}
+                            </button>
+                        )}
                         <a
                             href={candidate.resumeUrl}
                             download
@@ -135,6 +143,7 @@ export default function CandidateProfile() {
                     </div>
                 </div>
 
+
                 <div className="col-span-12 lg:col-span-4 space-y-6">
                     <div className="bg-white border border-[#E2E8F0] rounded-xl p-6">
                         <h4 className="font-bold mb-4">Candidate Snapshot</h4>
@@ -151,45 +160,128 @@ export default function CandidateProfile() {
                     </div>
 
                     <div className="space-y-3">
+                        {/* Documents Section */}
+                        {candidate.offerLetterUrl && (
+                            <div className="bg-white border border-[#E2E8F0] rounded-xl p-6 mt-6">
+                                <h4 className="font-bold mb-4">Documents</h4>
+                                <div className="space-y-2">
+                                    <a
+                                        href={candidate.offerLetterUrl}
+                                        target="_blank"
+                                        className="flex items-center gap-2 text-sm text-blue-600 hover:underline"
+                                    >
+                                        <Download size={16} /> Offer Letter (PDF)
+                                    </a>
+                                    {candidate.ndaUrl && (
+                                        <a
+                                            href={candidate.ndaUrl}
+                                            target="_blank"
+                                            className="flex items-center gap-2 text-sm text-blue-600 hover:underline"
+                                        >
+                                            <Download size={16} /> NDA (PDF)
+                                        </a>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {candidate.status === 'Hired' && (
+                            <div className="w-full p-4 border border-emerald-200 text-emerald-700 bg-emerald-50 rounded-xl font-bold flex justify-center items-center gap-2">
+                                <CheckCircle size={18} /> Candidate Successfully Hired
+                            </div>
+                        )}
+                    </div>
+                    <div className="space-y-3">
+
+                        {/* NEW: Interview Feedback Section */}
+                        <div className="bg-white border border-[#E2E8F0] rounded-xl p-8">
+                            <h4 className="font-bold text-lg mb-6">Interview Feedback</h4>
+                            {candidate.interviews?.length > 0 ? (
+                                <div className="space-y-4">
+                                    {candidate.interviews.map((i: any) => (
+                                        <div key={i._id} className="p-4 border border-gray-100 rounded-lg bg-gray-50">
+                                            <p className="text-sm font-bold capitalize">{i.type || "Interview"} Feedback</p>
+                                            {i.feedback ? (
+                                                <div className="mt-2 text-sm text-gray-600">
+                                                    <p><span className="font-bold">Recommendation:</span> {i.feedback.recommendation}</p>
+                                                    <p><span className="font-bold">Notes:</span> {i.feedback.note}</p>
+                                                </div>
+                                            ) : (
+                                                <p className="text-sm text-gray-400 italic mt-1">No feedback provided yet.</p>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-sm text-gray-500">No interviews recorded.</p>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="space-y-3">
 
                         {/* 2. Add the Schedule Interview Button */}
-                        <button
-                            onClick={() => setShowScheduleModal(true)}
-                            className="w-full p-4 border border-purple-200 text-purple-600 rounded-xl hover:bg-purple-50 font-bold flex justify-between items-center"
-                        >
-                            Schedule Interview <Calendar size={18} />
-                        </button>
-                        {/* Hired Action */}
-                        {candidate.status === 'Offer Sent' && (
+                        {/* 2. Schedule Interview Button - Only show if not Hired/Rejected */}
+                        {candidate.status !== 'Hired' && candidate.status !== 'Rejected' && (
                             <button
-                                onClick={() => updateStatus('Hired', 'Candidate accepted the offer.')}
+                                onClick={() => setShowScheduleModal(true)}
+                                className="w-full p-4 border border-purple-200 text-purple-600 rounded-xl hover:bg-purple-50 font-bold flex justify-between items-center"
+                            >
+                                Schedule Interview <Calendar size={18} />
+                            </button>
+                        )}
+                        {/* Hired Action */}
+                        {/* Updated Hired Action */}
+                        {candidate.status !== 'Hired' && candidate.status !== 'Rejected' && (
+                            <button
+                                onClick={() => {
+                                    if (candidate.status !== 'Offer Sent') {
+                                        alert("An offer must be generated before hiring the candidate.");
+                                        return;
+                                    }
+                                    updateStatus('Hired', 'Candidate accepted the offer.');
+                                }}
                                 className="w-full p-4 border border-green-200 text-green-600 rounded-xl hover:bg-green-50 font-bold flex justify-between items-center"
                             >
                                 Mark as Hired <CheckCircle size={18} />
                             </button>
                         )}
 
-                        {/* Reject Action */}
-                        {!showRejectInput ? (
-                            <button
-                                onClick={() => setShowRejectInput(true)}
-                                className="w-full p-4 border border-red-200 text-red-600 rounded-xl hover:bg-red-50 font-bold flex justify-between items-center"
-                            >
-                                Reject Candidate <UserMinus size={18} />
-                            </button>
-                        ) : (
-                            <div className="space-y-2 p-4 border border-red-200 rounded-xl bg-red-50">
-                                <textarea
-                                    className="w-full p-2 border rounded text-sm"
-                                    placeholder="Reason for rejection..."
-                                    rows={3}
-                                    onChange={(e) => setRejectReason(e.target.value)}
-                                />
-                                <div className="flex gap-2">
-                                    <button onClick={() => updateStatus('Rejected', rejectReason)} className="flex-1 bg-red-600 text-white py-2 rounded text-sm font-bold">Confirm</button>
-                                    <button onClick={() => setShowRejectInput(false)} className="flex-1 border py-2 rounded text-sm bg-white">Cancel</button>
-                                </div>
-                            </div>
+                        {/* Only show the Rejection area if the candidate is NOT already Hired or Rejected */}
+                        {candidate.status !== 'Hired' && candidate.status !== 'Rejected' && (
+                            <>
+                                {!showRejectInput ? (
+                                    <button
+                                        onClick={() => setShowRejectInput(true)}
+                                        className="w-full p-4 border border-red-200 text-red-600 rounded-xl hover:bg-red-50 font-bold flex justify-between items-center"
+                                    >
+                                        Reject Candidate <UserMinus size={18} />
+                                    </button>
+                                ) : (
+                                    <div className="space-y-2 p-4 border border-red-200 rounded-xl bg-red-50">
+                                        <textarea
+                                            className="w-full p-2 border rounded text-sm"
+                                            placeholder="Reason for rejection..."
+                                            rows={3}
+                                            onChange={(e) => setRejectReason(e.target.value)}
+                                        />
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => updateStatus('Rejected', rejectReason)}
+                                                className="flex-1 bg-red-600 text-white py-2 rounded text-sm font-bold"
+                                            >
+                                                Confirm
+                                            </button>
+                                            <button
+                                                onClick={() => setShowRejectInput(false)}
+                                                className="flex-1 border py-2 rounded text-sm bg-white"
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </>
                         )}
                     </div>
                 </div>
