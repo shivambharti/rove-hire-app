@@ -188,14 +188,19 @@ const styles = StyleSheet.create({
         fontSize: 8,
     },
 });
+const formatUSDate = (date: string | Date) =>
+    new Date(date).toLocaleDateString("en-US", {
+        month: "2-digit",
+        day: "2-digit",
+        year: "numeric",
+    });
 
 export const OfferLetterTemplate = ({
     data,
 }: {
     data: any;
 }) => {
-    const currentDate = new Date().toLocaleDateString();
-
+    const currentDate = formatUSDate(new Date());
     return (
         <Document>
             <Page size="A4" style={styles.page}>
@@ -253,9 +258,7 @@ export const OfferLetterTemplate = ({
 
                         <Text style={styles.cardRow}>
                             Proposed Joining Date:{' '}
-                            {new Date(
-                                data?.startDate
-                            ).toLocaleDateString()}
+                            {formatUSDate(data?.startDate)}
                         </Text>
 
                         <Text style={styles.cardRow}>
@@ -359,9 +362,7 @@ export const OfferLetterTemplate = ({
                             }
                         >
                             Joining Date:{' '}
-                            {new Date(
-                                data?.startDate
-                            ).toLocaleDateString()}
+                            {formatUSDate(data?.startDate)}
                         </Text>
                     </View>
 

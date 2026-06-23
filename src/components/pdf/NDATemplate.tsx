@@ -235,7 +235,12 @@ const styles = StyleSheet.create({
         fontSize: 7,
     },
 });
-
+const formatUSDate = (date: string | Date) =>
+    new Date(date).toLocaleDateString("en-US", {
+        month: "2-digit",
+        day: "2-digit",
+        year: "numeric",
+    });
 const Section = ({
     icon,
     title,
@@ -261,7 +266,7 @@ const Section = ({
 );
 
 export const NDATemplate = ({ data }: { data: any }) => {
-    const currentDate = new Date().toLocaleDateString();
+    const currentDate = formatUSDate(new Date());
 
     return (
         <Document>
