@@ -8,7 +8,7 @@ export default function GenerateOfferModal({ candidate, onClose, onRefresh }: an
         currency: "USD",
         startDate: "",
         manager: "",
-        location: candidate.currentLocation || "",
+        location: "",
     });
 
     const handleGenerate = async () => {
@@ -125,6 +125,15 @@ export default function GenerateOfferModal({ candidate, onClose, onRefresh }: an
                                 onChange={e => setFormData({ ...formData, manager: e.target.value })}
                             />
                         </div>
+                    </div>
+
+                      <div className="space-y-1">
+                        <label className="text-xs font-semibold text-gray-600 uppercase">Work Location</label>
+                        <input
+                            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                            value={formData.location}
+                            onChange={e => setFormData({ ...formData, location: e.target.value })}
+                        />
                     </div>
                 </div>
 
