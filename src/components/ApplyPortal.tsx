@@ -51,34 +51,34 @@ export default function ApplyPortal({
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {/* Name & Email */}
                             <div className="col-span-full">
-                                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Full Name</label>
+                                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Full Name<span className="text-red-500">*</span></label>
                                 <input name="name" defaultValue={name} readOnly className="w-full px-3 py-2 text-sm rounded border border-slate-100 bg-slate-50 text-slate-500 outline-none" />
                             </div>
 
                             <div className="col-span-full">
-                                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Email Address</label>
+                                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Email Address<span className="text-red-500">*</span></label>
                                 <input name="email" defaultValue={email} readOnly className="w-full px-3 py-2 text-sm rounded border border-slate-100 bg-slate-50 text-slate-500 outline-none" />
                             </div>
 
                             {/* Contact Details */}
                             <div>
-                                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Phone Number</label>
+                                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Phone Number<span className="text-red-500">*</span></label>
                                 <input name="phoneNumber" type="tel" required className="w-full px-3 py-2 text-sm rounded border border-slate-200 focus:ring-2 focus:ring-[#ad2c00]/10 focus:border-[#ad2c00] outline-none" />
                             </div>
 
                             <div>
-                                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Current Location</label>
+                                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Current Location<span className="text-red-500">*</span></label>
                                 <input name="currentLocation" required className="w-full px-3 py-2 text-sm rounded border border-slate-200 focus:ring-2 focus:ring-[#ad2c00]/10 focus:border-[#ad2c00] outline-none" />
                             </div>
 
                             {/* Role & Notice */}
                             <div className="col-span-full">
-                                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Current Role</label>
+                                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Current Role<span className="text-red-500">*</span></label>
                                 <input name="currentRole" required className="w-full px-3 py-2 text-sm rounded border border-slate-200 focus:ring-2 focus:ring-[#ad2c00]/10 focus:border-[#ad2c00] outline-none" />
                             </div>
 
                             <div>
-                                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Notice Period</label>
+                                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Notice Period<span className="text-red-500">*</span></label>
                                 <select name="noticePeriod" required className="w-full px-3 py-2 text-sm rounded border border-slate-200 focus:ring-2 focus:ring-[#ad2c00]/10 focus:border-[#ad2c00] outline-none appearance-none">
                                     <option value="">Select option</option>
                                     <option>Immediate</option>
@@ -89,13 +89,13 @@ export default function ApplyPortal({
                             </div>
 
                             <div>
-                                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Salary Expectation</label>
+                                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Salary Expectation<span className="text-red-500">*</span></label>
                                 <input name="salaryExpectation" type="number" required className="w-full px-3 py-2 text-sm rounded border border-slate-200 focus:ring-2 focus:ring-[#ad2c00]/10 focus:border-[#ad2c00] outline-none" placeholder="$" />
                             </div>
 
                             {/* LinkedIn URL - Full span to keep it organized */}
                             <div className="col-span-full">
-                                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">LinkedIn Profile URL</label>
+                                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">LinkedIn Profile URL<span className="text-red-500">*</span></label>
                                 <input name="linkedinUrl" type="url" required className="w-full px-3 py-2 text-sm rounded border border-slate-200 focus:ring-2 focus:ring-[#ad2c00]/10 focus:border-[#ad2c00] outline-none" />
                             </div>
                         </div>

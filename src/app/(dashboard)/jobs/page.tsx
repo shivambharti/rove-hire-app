@@ -8,7 +8,7 @@ export default function JobOpeningsPage() {
     const [showModal, setShowModal] = useState(false);
     const [jobs, setJobs] = useState([]); // Initialize as empty array
     const [isLoading, setIsLoading] = useState(true);
-
+    const [successMessage, setSuccessMessage] = useState("");
     // Fetch dynamic data from the API
     const fetchJobs = async () => {
         setIsLoading(true);
@@ -28,18 +28,35 @@ export default function JobOpeningsPage() {
     useEffect(() => {
         fetchJobs();
     }, []);
+    const handleJobCreated = async () => {
+        await fetchJobs();
+
+        setSuccessMessage("Job opening created successfully.");
+
+        setTimeout(() => {
+            setSuccessMessage("");
+        }, 3000);
+    };
 
     return (
         <div className="min-h-screen bg-[#f8f9ff] text-[#0b1c30]">
             <main className="p-8 max-w-[1400px] mx-auto space-y-8">
-                
+                {successMessage && (
+                    <div className="mb-6 animate-in fade-in slide-in-from-top duration-300">
+                        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-green-500" />
+                            <span className="font-medium">{successMessage}</span>
+                        </div>
+                    </div>
+                )}
                 {/* Header Section */}
                 <div className="flex justify-between items-center">
                     <div>
-                        <h3 className="text-xl font-bold">Active Pipeline</h3>
+                                <h2 className="text-2xl font-bold text-[#ad2c00]">Job Pipeline</h2>
+
                         <p className="text-sm text-zinc-500">Manage your current job listings.</p>
                     </div>
-                    <button 
+                    <button
                         onClick={() => setShowModal(true)}
                         className="flex items-center gap-2 bg-[#ad2c00] text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:opacity-90"
                     >
@@ -58,10 +75,10 @@ export default function JobOpeningsPage() {
                                     <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${job.status === "Open" ? "bg-emerald-50 text-emerald-600" : "bg-zinc-100 text-zinc-500"}`}>
                                         {job.status}
                                     </span>
-                                    <MoreVertical className="w-4 h-4 text-zinc-400" />
+                                    {/* <MoreVertical className="w-4 h-4 text-zinc-400" /> */}
                                 </div>
                                 <h4 className="text-lg font-bold text-zinc-900">{job.title}</h4>
-                                
+
                                 {/* Dynamic Candidate Count */}
                                 <div className="flex items-center gap-2 my-6">
                                     <p className="text-sm font-bold text-[#ad2c00]">{job.candidateCount}</p>
@@ -74,9 +91,6 @@ export default function JobOpeningsPage() {
                                             <span key={skill} className="text-xs text-zinc-500 bg-zinc-50 px-2 py-1 rounded">{skill}</span>
                                         ))}
                                     </div>
-                                    <a href="#" className="text-[#ad2c00] text-xs font-semibold flex items-center gap-1">
-                                        View Pipeline <ArrowRight className="w-3.5 h-3.5" />
-                                    </a>
                                 </div>
                             </div>
                         ))
@@ -85,11 +99,9 @@ export default function JobOpeningsPage() {
             </main>
 
             {showModal && (
-                <AddJobOpeningModal 
-                    onClose={() => {
-                        setShowModal(false);
-                        fetchJobs(); // Re-fetch data after closing modal
-                    }} 
+                <AddJobOpeningModal
+                    onClose={() => setShowModal(false)}
+                    onJobCreated={handleJobCreated}
                 />
             )}
         </div>

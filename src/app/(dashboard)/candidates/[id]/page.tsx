@@ -8,7 +8,7 @@ import GenerateOfferModal from "@/components/GenerateOfferModal";
 export default function CandidateProfile() {
     const params = useParams();
     const candidateId = params.id as string;
-
+    const [rejectReasonError, setRejectReasonError] = useState("");
     const [candidate, setCandidate] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [rejectReason, setRejectReason] = useState("");
@@ -44,10 +44,13 @@ export default function CandidateProfile() {
             });
 
             if (response.ok) {
-                // Refresh data after update
                 const updatedData = await response.json();
+
                 setCandidate(updatedData);
                 setShowRejectInput(false);
+
+                setRejectReason("");
+                setRejectReasonError("");
             }
         } catch (error) {
             console.error("Error updating status:", error);
@@ -136,7 +139,8 @@ export default function CandidateProfile() {
                                             day: "2-digit",
                                             year: "numeric"
                                         })}
-                                    </p>                                    <p className="text-sm mt-1">{step.note || "No details provided."}</p>
+                                    </p>
+                                    <p className="text-sm mt-1">{step.note || "No details provided."}</p>
                                 </div>
                             ))}
                         </div>
@@ -150,11 +154,34 @@ export default function CandidateProfile() {
                         <div className="space-y-4 text-sm">
                             <div>
                                 <p className="text-gray-400 uppercase text-[10px] font-bold">Expected Salary</p>
-                                <p className="font-bold">{candidate.salaryExpectation || "Not specified"}</p>
-                            </div>
+                                <p className="font-bold">
+                                    {candidate.salaryExpectation != null &&
+                                        candidate.salaryExpectation !== ""
+                                        ? `$${candidate.salaryExpectation}`
+                                        : "Not specified"}
+                                </p>                            </div>
                             <div>
                                 <p className="text-gray-400 uppercase text-[10px] font-bold">Notice Period</p>
                                 <p className="font-bold">{candidate.noticePeriod || "Not specified"}</p>
+                            </div>
+
+                            <div>
+                                <p className="text-gray-400 uppercase text-[10px] font-bold">
+                                    LinkedIn Profile
+                                </p>
+
+                                {candidate.linkedinUrl ? (
+                                    <a
+                                        href={candidate.linkedinUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-blue-600 hover:underline break-all"
+                                    >
+                                        {candidate.linkedinUrl}
+                                    </a>
+                                ) : (
+                                    <p className="font-bold">Not specified</p>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -263,18 +290,42 @@ export default function CandidateProfile() {
                                             className="w-full p-2 border rounded text-sm"
                                             placeholder="Reason for rejection..."
                                             rows={3}
-                                            onChange={(e) => setRejectReason(e.target.value)}
+                                            value={rejectReason}
+                                            onChange={(e) => {
+                                                setRejectReason(e.target.value);
+
+                                                if (rejectReasonError) {
+                                                    setRejectReasonError("");
+                                                }
+                                            }}
                                         />
+
+                                        {rejectReasonError && (
+                                            <p className="text-sm text-red-500">
+                                                {rejectReasonError}
+                                            </p>
+                                        )}
                                         <div className="flex gap-2">
                                             <button
-                                                onClick={() => updateStatus('Rejected', rejectReason)}
-                                                className="flex-1 bg-red-600 text-white py-2 rounded text-sm font-bold"
+                                                onClick={() => {
+                                                    if (!rejectReason.trim()) {
+                                                        setRejectReasonError(
+                                                            "Rejection reason is required"
+                                                        );
+                                                        return;
+                                                    }
+
+                                                    updateStatus("Rejected", rejectReason);
+                                                }} className="flex-1 bg-red-600 text-white py-2 rounded text-sm font-bold"
                                             >
                                                 Confirm
                                             </button>
                                             <button
-                                                onClick={() => setShowRejectInput(false)}
-                                                className="flex-1 border py-2 rounded text-sm bg-white"
+                                                onClick={() => {
+                                                    setShowRejectInput(false);
+                                                    setRejectReason("");
+                                                    setRejectReasonError("");
+                                                }} className="flex-1 border py-2 rounded text-sm bg-white"
                                             >
                                                 Cancel
                                             </button>

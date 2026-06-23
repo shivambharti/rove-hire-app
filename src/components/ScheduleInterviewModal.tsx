@@ -1,5 +1,6 @@
 "use client";
 
+import { X } from "lucide-react";
 import React, { useState } from "react";
 
 interface ModalProps {
@@ -18,25 +19,61 @@ export default function ScheduleInterviewModal({ candidateId, jobId, onClose, on
         notes: ""
     });
 
+    const [errors, setErrors] = useState({
+        date: "",
+        time: "",
+        type: "",
+        interviewerName: "",
+    });
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Create a proper ISO string that includes the 'Z' to represent UTC
-        // We combine the date and time strings and force UTC by appending 'Z'
+        const validationErrors = {
+            date: "",
+            time: "",
+            type: "",
+            interviewerName: "",
+        };
+
+        if (!formData.date) {
+            validationErrors.date = "Interview date is required";
+        }
+
+        if (!formData.time) {
+            validationErrors.time = "Interview time is required";
+        }
+
+        if (!formData.type) {
+            validationErrors.type = "Interview type is required";
+        }
+
+        if (!formData.interviewerName.trim()) {
+            validationErrors.interviewerName =
+                "Interviewer name is required";
+        }
+
+        setErrors(validationErrors);
+
+        if (Object.values(validationErrors).some(Boolean)) {
+            return;
+        }
+
         const isoDateTime = `${formData.date}T${formData.time}:00Z`;
         const combinedDateTime = new Date(isoDateTime);
 
         const res = await fetch("/api/interviews", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+            },
             body: JSON.stringify({
                 candidateId,
                 jobId,
-                date: combinedDateTime.toISOString(), // Send as explicit ISO string
+                date: combinedDateTime.toISOString(),
                 type: formData.type,
                 interviewerName: formData.interviewerName,
-                notes: formData.notes
-            })
+                notes: formData.notes,
+            }),
         });
 
         if (res.ok) {
@@ -53,49 +90,128 @@ export default function ScheduleInterviewModal({ candidateId, jobId, onClose, on
                         <h3 className="text-xl font-bold text-[#0b1c30]">Schedule Interview</h3>
                         <p className="text-sm text-gray-500 mt-1">Select a date and time to meet with the candidate.</p>
                     </div>
-                    <button onClick={onClose} className="text-gray-400 hover:text-black">
+                    {/* <button onClick={onClose} className="text-gray-400 hover:text-black">
                         <span className="material-symbols-outlined">close</span>
-                    </button>
+                    </button> */}
+
+                    <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full"><X size={20} /></button>
+
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-8 space-y-6">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-gray-500 uppercase">Date</label>
+                            <label className="text-xs font-bold text-gray-500 uppercase">Date<span className="text-red-500">*</span></label>
                             <input
-                                required type="date"
+                                type="date"
                                 className="w-full h-11 px-4 rounded-lg border border-slate-200"
-                                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                                value={formData.date}
+                                onChange={(e) => {
+                                    setFormData({
+                                        ...formData,
+                                        date: e.target.value,
+                                    });
+
+                                    if (errors.date) {
+                                        setErrors((prev) => ({
+                                            ...prev,
+                                            date: "",
+                                        }));
+                                    }
+                                }}
                             />
+
+                            {errors.date && (
+                                <p className="text-sm text-red-500">
+                                    {errors.date}
+                                </p>
+                            )}
                         </div>
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-gray-500 uppercase">Time</label>
+                            <label className="text-xs font-bold text-gray-500 uppercase">Time<span className="text-red-500">*</span></label>
                             <input
-                                required type="time"
+                                type="time"
                                 className="w-full h-11 px-4 rounded-lg border border-slate-200"
-                                onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                                value={formData.time}
+                                onChange={(e) => {
+                                    setFormData({
+                                        ...formData,
+                                        time: e.target.value,
+                                    });
+
+                                    if (errors.time) {
+                                        setErrors((prev) => ({
+                                            ...prev,
+                                            time: "",
+                                        }));
+                                    }
+                                }}
                             />
+
+                            {errors.time && (
+                                <p className="text-sm text-red-500">
+                                    {errors.time}
+                                </p>
+                            )}
                         </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-gray-500 uppercase">Type</label>
+                            <label className="text-xs font-bold text-gray-500 uppercase">Type<span className="text-red-500">*</span></label>
                             <select
+                                value={formData.type}
                                 className="w-full h-11 px-4 rounded-lg border border-slate-200"
-                                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                                onChange={(e) => {
+                                    setFormData({
+                                        ...formData,
+                                        type: e.target.value,
+                                    });
+
+                                    if (errors.type) {
+                                        setErrors((prev) => ({
+                                            ...prev,
+                                            type: "",
+                                        }));
+                                    }
+                                }}
                             >
                                 <option value="Screening">Screening</option>
                                 <option value="Technical">Technical</option>
                             </select>
+                            {errors.type && (
+                                <p className="text-sm text-red-500">
+                                    {errors.type}
+                                </p>
+                            )}
                         </div>
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-gray-500 uppercase">Interviewer</label>
+                            <label className="text-xs font-bold text-gray-500 uppercase">Interviewer<span className="text-red-500">*</span></label>
                             <input
-                                required type="text" placeholder="e.g. Sarah Jenkins"
+                                type="text"
+                                placeholder="e.g. Sarah Jenkins"
                                 className="w-full h-11 px-4 rounded-lg border border-slate-200"
-                                onChange={(e) => setFormData({ ...formData, interviewerName: e.target.value })}
+                                value={formData.interviewerName}
+                                onChange={(e) => {
+                                    setFormData({
+                                        ...formData,
+                                        interviewerName: e.target.value,
+                                    });
+
+                                    if (errors.interviewerName) {
+                                        setErrors((prev) => ({
+                                            ...prev,
+                                            interviewerName: "",
+                                        }));
+                                    }
+                                }}
                             />
+
+                            {errors.interviewerName && (
+                                <p className="text-sm text-red-500">
+                                    {errors.interviewerName}
+                                </p>
+                            )}
                         </div>
                     </div>
 

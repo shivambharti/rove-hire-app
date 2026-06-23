@@ -15,23 +15,27 @@ export default function CandidatePipelineDashboard() {
   const [showModal, setShowModal] = useState(false);
   const router = useRouter();
 
+  const fetchCandidates = async () => {
+    setLoading(true);
+
+    try {
+      const url = `/api/candidates?search=${encodeURIComponent(
+        searchQuery
+      )}&status=${encodeURIComponent(activeTab)}&page=${currentPage}`;
+
+      const res = await fetch(url);
+      const data = await res.json();
+
+      setCandidates(data.candidates);
+      setTotalCount(data.totalCount);
+    } catch (err) {
+      console.error("Failed to fetch candidates:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchCandidates = async () => {
-      setLoading(true);
-      try {
-        const url = `/api/candidates?search=${encodeURIComponent(searchQuery)}&status=${encodeURIComponent(activeTab)}&page=${currentPage}`;
-        const res = await fetch(url);
-        const data = await res.json();
-
-        setCandidates(data.candidates); // Set the array
-        setTotalCount(data.totalCount);   // Set the count
-      } catch (err) {
-        console.error("Failed to fetch candidates:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     const timer = setTimeout(fetchCandidates, 300);
     return () => clearTimeout(timer);
   }, [searchQuery, activeTab, currentPage]);
@@ -42,11 +46,19 @@ export default function CandidatePipelineDashboard() {
   const handleRowClick = (candidate: any) => {
     router.push(`/candidates/${candidate._id}`);
   };
+
+  const handleCandidateAdded = async () => {
+    await fetchCandidates();
+  };
   return (
     <div className="w-full p-8 space-y-6">
       {/* Header */}
       <header className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-[#ad2c00]">Candidate Pipeline</h2>
+        <div>
+
+          <h2 className="text-2xl font-bold text-[#ad2c00]">Candidate Pipeline</h2>
+          <p className="text-sm text-zinc-500">Manage candidate's listings.</p>
+        </div>
         <div className="flex items-center gap-4">
           <div className="relative w-80">
             <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
@@ -69,24 +81,6 @@ export default function CandidatePipelineDashboard() {
         </div>
       </header>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {[
-          { label: "Total Candidates", value: "1,284", sub: "+12% this month" },
-          { label: "Active Interviews", value: "42", sub: "8 scheduled today" },
-          { label: "Time to Hire", value: "18d", sub: "-2d from avg." }
-        ].map((stat, i) => (
-          <div key={i} className="bg-white border border-[#E2E8F0] p-4 rounded-xl shadow-sm">
-            <p className="text-[11px] font-semibold text-gray-500 uppercase">{stat.label}</p>
-            <p className="text-3xl font-bold text-[#0b1c30] mt-1">{stat.value}</p>
-            <p className="text-xs text-emerald-600 mt-2 font-medium">{stat.sub}</p>
-          </div>
-        ))}
-        <div className="border-2 border-dashed border-[#E2E8F0] rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-white hover:border-[#ad2c00]/30 transition-colors">
-          <Plus className="w-6 h-6 text-[#ad2c00]" />
-          <span className="text-xs font-bold text-[#ad2c00] mt-2">New Job Posting</span>
-        </div>
-      </div>
 
       {/* Pipeline Table */}
       <div className="bg-white border border-[#E2E8F0] rounded-xl overflow-hidden">
@@ -108,7 +102,7 @@ export default function CandidatePipelineDashboard() {
               <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Role Applied</th>
               <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Current Status</th>
               <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Last Activity</th>
-              <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase">Actions</th>
+              {/* <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase">Actions</th> */}
             </tr>
           </thead>
           <tbody className="divide-y divide-[#E2E8F0]">
@@ -141,9 +135,9 @@ export default function CandidatePipelineDashboard() {
                       year: "numeric"
                     })}
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  {/* <td className="px-6 py-4 text-right">
                     <MoreHorizontal className="w-5 h-5 cursor-pointer text-gray-400" />
-                  </td>
+                  </td> */}
                 </tr>
               ))
             )}
@@ -191,7 +185,8 @@ export default function CandidatePipelineDashboard() {
         </div>
       </div>
 
-      {showModal && <AddCandidateModal onClose={() => setShowModal(false)} />}
+      {showModal && <AddCandidateModal onClose={() => setShowModal(false)} onCandidateAdded={handleCandidateAdded}
+      />}
 
     </div>
 

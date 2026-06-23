@@ -9,12 +9,23 @@ import BulletList from '@tiptap/extension-bullet-list';
 import ListItem from '@tiptap/extension-list-item';
 import Link from '@tiptap/extension-link';
 
-export default function AddJobOpeningModal({ onClose }: { onClose: () => void }) {
+export default function AddJobOpeningModal({
+    onClose,
+    onJobCreated,
+}: {
+    onClose: () => void;
+    onJobCreated: () => void;
+}) {
     const [title, setTitle] = useState("");
     const [skills, setSkills] = useState<string[]>([]);
     const [skillInput, setSkillInput] = useState("");
     const [status, setStatus] = useState("Open");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [errors, setErrors] = useState({
+        title: "",
+        description: "",
+        skills: "",
+    });
 
     const editor = useEditor({
         extensions: [
@@ -24,7 +35,15 @@ export default function AddJobOpeningModal({ onClose }: { onClose: () => void })
             ListItem,
             Link.configure({ openOnClick: false }),
         ],
-        content: '<p>Start describing the role...</p>',
+        content: '',
+        onUpdate: () => {
+            if (errors.description) {
+                setErrors((prev) => ({
+                    ...prev,
+                    description: "",
+                }));
+            }
+        },
         editorProps: {
             attributes: {
                 class: 'prose prose-sm max-w-none focus:outline-none min-h-[150px] px-4 py-3',
@@ -37,21 +56,66 @@ export default function AddJobOpeningModal({ onClose }: { onClose: () => void })
             e.preventDefault();
             setSkills([...skills, skillInput.trim()]);
             setSkillInput("");
+
+            setErrors((prev) => ({
+                ...prev,
+                skills: "",
+            }));
         }
     };
 
     const handleCreateJob = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        const description = editor?.getHTML() || "";
+
+        const validationErrors = {
+            title: "",
+            description: "",
+            skills: "",
+        };
+
+        if (!title.trim()) {
+            validationErrors.title = "Job title is required";
+        }
+
+        const plainText =
+            editor?.getText().trim() || "";
+
+        if (!plainText) {
+            validationErrors.description =
+                "Job description is required";
+        }
+
+        if (skills.length === 0) {
+            validationErrors.skills =
+                "At least one skill is required";
+        }
+
+        setErrors(validationErrors);
+
+        if (Object.values(validationErrors).some(Boolean)) {
+            return;
+        }
+
         setIsSubmitting(true);
+
         try {
-            const description = editor?.getHTML() || "";
             const response = await fetch("/api/jobOpenings", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ title, description, skills, status }),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    title,
+                    description,
+                    skills,
+                    status,
+                }),
             });
+
             if (response.ok) {
-                alert("Job opening created!");
+                onJobCreated();
                 onClose();
             }
         } catch (error) {
@@ -74,20 +138,34 @@ export default function AddJobOpeningModal({ onClose }: { onClose: () => void })
                     <div className="flex-1 overflow-y-auto px-8 py-8 space-y-6">
                         {/* Fields: Title, Status, Description, Skills */}
                         <div className="space-y-2">
-                            <label className="text-xs font-semibold text-zinc-600 block">Job Title</label>
-                            <input type="text" required value={title} onChange={(e) => setTitle(e.target.value)} className="w-full px-4 py-2.5 border border-[#E2E8F0] rounded-xl text-sm" />
+                            <label className="text-xs font-semibold text-zinc-600 block">Job Title<span className="text-red-500">*</span></label>
+                            <input type="text" required value={title} onChange={(e) => {
+                                setTitle(e.target.value);
+
+                                if (errors.title) {
+                                    setErrors((prev) => ({
+                                        ...prev,
+                                        title: "",
+                                    }));
+                                }
+                            }} className="w-full px-4 py-2.5 border border-[#E2E8F0] rounded-xl text-sm" />
+                            {errors.title && (
+                                <p className="text-red-500 text-xs">
+                                    {errors.title}
+                                </p>
+                            )}
                         </div>
 
                         {/* Status Dropdown */}
                         <div className="space-y-2">
-                            <label className="text-xs font-semibold text-zinc-600 block">Status</label>
+                            <label className="text-xs font-semibold text-zinc-600 block">Status<span className="text-red-500">*</span></label>
                             <select value={status} onChange={(e) => setStatus(e.target.value)} className="w-full px-4 py-2.5 border border-[#E2E8F0] rounded-xl text-sm bg-white cursor-pointer">
                                 <option value="Open">Open</option>
                                 <option value="Closed">Closed</option>
                             </select>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-xs font-semibold text-zinc-600 block">Description</label>
+                            <label className="text-xs font-semibold text-zinc-600 block">Description<span className="text-red-500">*</span></label>
                             <div className="border border-[#E2E8F0] rounded-xl overflow-hidden bg-white">
                                 <div className="bg-zinc-50 px-4 py-2 border-b flex gap-3 text-zinc-500">
                                     <button type="button" onClick={() => editor?.chain().focus().toggleBold().run()} className="hover:text-[#ad2c00]"><Bold className="w-4 h-4" /></button>
@@ -98,10 +176,15 @@ export default function AddJobOpeningModal({ onClose }: { onClose: () => void })
                                 </div>
                                 <EditorContent editor={editor} />
                             </div>
+                            {errors.description && (
+                                <p className="text-red-500 text-xs mt-2">
+                                    {errors.description}
+                                </p>
+                            )}
                         </div>
                         {/* Skills */}
                         <div className="space-y-2">
-                            <label className="text-xs font-semibold text-zinc-600 block">Required Skills</label>
+                            <label className="text-xs font-semibold text-zinc-600 block">Required Skills<span className="text-red-500">*</span></label>
                             <input type="text" value={skillInput} onChange={(e) => setSkillInput(e.target.value)} onKeyDown={handleAddSkill} className="w-full px-4 py-2.5 border border-[#E2E8F0] rounded-xl text-sm" placeholder="Type and press Enter" />
                             <div className="flex flex-wrap gap-2 mt-2">
                                 {skills.map((skill, index) => (
@@ -109,6 +192,11 @@ export default function AddJobOpeningModal({ onClose }: { onClose: () => void })
                                         {skill} <X className="w-3 h-3 cursor-pointer" onClick={() => setSkills(skills.filter((_, i) => i !== index))} />
                                     </span>
                                 ))}
+                                {errors.skills && (
+                                    <p className="text-red-500 text-xs">
+                                        {errors.skills}
+                                    </p>
+                                )}
                             </div>
                         </div>
                     </div>

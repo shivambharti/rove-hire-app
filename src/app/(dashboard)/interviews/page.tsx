@@ -1,12 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import AddCandidateModal from "@/components/AddCandidateModal";
-import { Search, Plus, MoreHorizontal, UserPlus, ChevronLeft, ChevronRight, ThumbsUp } from "lucide-react";
 import FeedbackModal from "@/components/FeedbackModal";
 import { useRouter } from "next/navigation";
 
 export default function InterviewsDashboard() {
+  const [successMessage, setSuccessMessage] = useState("");
   const [interviews, setInterviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [feedbackModal, setFeedbackModal] = useState({ isOpen: false, interviewId: null, candidateName: "", initialData: null });
@@ -35,7 +34,6 @@ export default function InterviewsDashboard() {
   // Fetch data from the API
   useEffect(() => {
 
-
     fetchInterviews();
   }, []);
 
@@ -47,7 +45,22 @@ export default function InterviewsDashboard() {
   };
   return (
     <div className="w-full p-8 space-y-6">
+      {successMessage && (
+        <div className="mb-6 animate-in fade-in slide-in-from-top duration-300">
+          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-green-500" />
+            <span className="font-medium">{successMessage}</span>
+          </div>
+        </div>
+      )}
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold text-[#ad2c00]">Interview Pipeline</h2>
 
+          <p className="text-sm text-zinc-500">Manage candidate's interview listings.</p>
+        </div>
+
+      </div>
       {/* Pipeline Table */}
       <div className="bg-white border border-[#E2E8F0] rounded-xl overflow-hidden">
         <table className="w-full text-left">
@@ -67,9 +80,9 @@ export default function InterviewsDashboard() {
               <tr><td colSpan={5} className="p-10 text-center">Loading...</td></tr>
             ) : (
               interviews.map((i: any) => (
-                <tr key={i._id} className="hover:bg-[#F8FAFC] cursor-pointer" onClick={() => handleRowClick(i)}>
+                <tr key={i._id} className="hover:bg-[#F8FAFC]">
                   {/* Candidate Name */}
-                  <td className="px-6 py-4 flex items-center gap-3">
+                  <td className="px-6 py-4 flex items-center gap-3 cursor-pointer" onClick={() => handleRowClick(i)}>
                     <div className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs bg-gray-200">
                       {i.candidateId?.name?.charAt(0) || "?"}
                     </div>
@@ -127,7 +140,7 @@ export default function InterviewsDashboard() {
                             initialData: i.feedback
                           });
                         }}
-                        className="text-[10px] font-bold text-blue-600 hover:underline uppercase"
+                        className="text-[10px] font-bold text-blue-600 hover:underline uppercase cursor-pointer"
                       >
                         View Feedback
                       </button>
@@ -142,7 +155,7 @@ export default function InterviewsDashboard() {
                             initialData: null
                           });
                         }}
-                        className="text-[10px] font-bold text-[#ad2c00] hover:underline uppercase"
+                        className="text-[10px] font-bold text-[#ad2c00] hover:underline uppercase cursor-pointer"
                       >
                         Complete
                       </button>
@@ -175,9 +188,15 @@ export default function InterviewsDashboard() {
 
             // Reset modal and refresh list
             setFeedbackModal({ isOpen: false, interviewId: null, candidateName: "", initialData: null });
-            fetchInterviews();
+            await fetchInterviews();
 
-            console.log("Feedback submitted successfully");
+            // Success message
+            setSuccessMessage(
+              `${feedbackModal.candidateName}'s interview feedback submitted successfully.`
+            );
+            setTimeout(() => {
+              setSuccessMessage("");
+            }, 3000);
           } catch (error) {
             console.error("Error submitting feedback:", error);
           }
