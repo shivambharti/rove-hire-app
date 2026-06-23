@@ -90,10 +90,6 @@ export default function ScheduleInterviewModal({ candidateId, jobId, onClose, on
                         <h3 className="text-xl font-bold text-[#0b1c30]">Schedule Interview</h3>
                         <p className="text-sm text-gray-500 mt-1">Select a date and time to meet with the candidate.</p>
                     </div>
-                    {/* <button onClick={onClose} className="text-gray-400 hover:text-black">
-                        <span className="material-symbols-outlined">close</span>
-                    </button> */}
-
                     <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full"><X size={20} /></button>
 
                 </div>

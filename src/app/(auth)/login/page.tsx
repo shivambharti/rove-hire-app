@@ -64,7 +64,7 @@ export default function LoginPage() {
             <div>
               <div className="flex justify-between items-center mb-1.5">
                 <label className="text-sm font-medium">Password</label>
-                <a href="#" className="text-xs text-[#ad2c00] hover:underline">Forgot Password?</a>
+                {/* <a href="#" className="text-xs text-[#ad2c00] hover:underline">Forgot Password?</a> */}
               </div>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 text-gray-400" size={18} />

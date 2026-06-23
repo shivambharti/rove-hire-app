@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { AlertTriangle } from "lucide-react";
 import { useParams } from "next/navigation";
 import { Mail, Phone, MapPin, Download, Calendar, UserMinus, CheckCircle } from "lucide-react";
 import ScheduleInterviewModal from "@/components/ScheduleInterviewModal";
@@ -8,6 +9,7 @@ import GenerateOfferModal from "@/components/GenerateOfferModal";
 export default function CandidateProfile() {
     const params = useParams();
     const candidateId = params.id as string;
+    const [hireError, setHireError] = useState("");
     const [rejectReasonError, setRejectReasonError] = useState("");
     const [candidate, setCandidate] = useState<any>(null);
     const [loading, setLoading] = useState(true);
@@ -18,22 +20,21 @@ export default function CandidateProfile() {
     useEffect(() => {
         if (!candidateId) return;
 
-        const fetchCandidate = async () => {
-            try {
-                setLoading(true);
-                const response = await fetch(`/api/candidates/${candidateId}`);
-                if (!response.ok) throw new Error("Failed to fetch");
-                const data = await response.json();
-                setCandidate(data);
-            } catch (error) {
-                console.error("Error fetching candidate:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchCandidate();
     }, [candidateId]);
+    const fetchCandidate = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch(`/api/candidates/${candidateId}`);
+            if (!response.ok) throw new Error("Failed to fetch");
+            const data = await response.json();
+            setCandidate(data);
+        } catch (error) {
+            console.error("Error fetching candidate:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const updateStatus = async (newStatus: string, note: string) => {
         try {
@@ -44,9 +45,8 @@ export default function CandidateProfile() {
             });
 
             if (response.ok) {
-                const updatedData = await response.json();
 
-                setCandidate(updatedData);
+                await fetchCandidate()
                 setShowRejectInput(false);
 
                 setRejectReason("");
@@ -104,8 +104,10 @@ export default function CandidateProfile() {
                         {['Interview Scheduled', 'Offer Sent'].includes(candidate.status) && (
                             <button
                                 className="bg-[#ad2c00] text-white px-6 py-3 rounded-lg font-bold hover:bg-[#8e2400] transition-colors"
-                                onClick={() => setShowOfferModal(true)}
-                            >
+                                onClick={() => {
+                                    setHireError("");
+                                    setShowOfferModal(true);
+                                }}                            >
                                 {candidate.offerLetterUrl ? "Regenerate Offer Documents" : "Generate Offer Documents"}
                             </button>
                         )}
@@ -259,21 +261,48 @@ export default function CandidateProfile() {
                         )}
                         {/* Hired Action */}
                         {/* Updated Hired Action */}
-                        {candidate.status !== 'Hired' && candidate.status !== 'Rejected' && (
-                            <button
-                                onClick={() => {
-                                    if (candidate.status !== 'Offer Sent') {
-                                        alert("An offer must be generated before hiring the candidate.");
-                                        return;
-                                    }
-                                    updateStatus('Hired', 'Candidate accepted the offer.');
-                                }}
-                                className="w-full p-4 border border-green-200 text-green-600 rounded-xl hover:bg-green-50 font-bold flex justify-between items-center"
-                            >
-                                Mark as Hired <CheckCircle size={18} />
-                            </button>
-                        )}
+                        {candidate.status !== "Hired" &&
+                            candidate.status !== "Rejected" && (
+                                <>
+                                    <button
+                                        onClick={() => {
+                                            if (candidate.status !== "Offer Sent") {
+                                                setHireError(
+                                                    "Please generate and send an offer letter before marking this candidate as hired."
+                                                );
 
+                                                setTimeout(() => {
+                                                    setHireError("");
+                                                }, 4000);
+
+                                                return;
+                                            }
+
+                                            updateStatus(
+                                                "Hired",
+                                                "Candidate accepted the offer."
+                                            );
+                                        }}
+                                        className="w-full p-4 border border-green-200 text-green-600 rounded-xl hover:bg-green-50 font-bold flex justify-between items-center"
+                                    >
+                                        Mark as Hired
+                                        <CheckCircle size={18} />
+                                    </button>
+
+                                    {hireError && (
+                                        <div className="p-4 border border-amber-200 bg-amber-50 rounded-xl flex items-start gap-3">
+                                            <AlertTriangle
+                                                size={18}
+                                                className="text-amber-600 mt-0.5 flex-shrink-0"
+                                            />
+
+                                            <p className="text-sm font-medium text-amber-700">
+                                                {hireError}
+                                            </p>
+                                        </div>
+                                    )}
+                                </>
+                            )}
                         {/* Only show the Rejection area if the candidate is NOT already Hired or Rejected */}
                         {candidate.status !== 'Hired' && candidate.status !== 'Rejected' && (
                             <>
