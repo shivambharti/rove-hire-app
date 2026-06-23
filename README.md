@@ -1,4 +1,4 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
 
 ## Getting Started
 
@@ -14,23 +14,38 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Hosting
+The application is hosted as a serverless deployment on the Vercel Platform. It utilizes serverless functions to handle API requests and routing, ensuring high availability, automatic scaling, and zero-configuration infrastructure management
 
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+Tech Stack and Justification
+Frontend: Built with Next.js and Tailwind CSS. Next.js was chosen for its integrated API routing and server-side rendering capabilities, which streamline development, while Tailwind provides a rapid utility-first workflow for consistent UI components.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Backend: Leverages Next.js API Routes (Node.js/TypeScript). Using a unified framework for both frontend and backend minimizes context switching and keeps the codebase DRY (Don't Repeat Yourself).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome
+Database: MongoDB. Given the document-based nature of recruitment data (candidates, job openings, and dynamic forms), a NoSQL approach provides the flexibility needed to iterate on data schemas without complex migrations.
 
-## Deploy on Vercel
+PDF Generation Approach
+Technique: I utilized @react-pdf/renderer to define document structures using React components. This allows for declarative, component-based PDF construction, which integrates seamlessly into the existing React/Next.js codebase. After generation, the resulting binary stream is uploaded to Vercel Blob to store the document persistently and generate a unique, accessible URL.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Why: Using @react-pdf/renderer provides a consistent developer experience by allowing the use of React primitives to layout documents. It effectively bridges the gap between web UI components and formal corporate documents, ensuring that styling remains maintainable and aligned with the application’s design system.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+Future Roadmap (Next 48 Hours)
+If given two more days, I would prioritize:
+
+Authentication/RBAC: Implementing role-based access control to ensure only authorized recruiters can view sensitive candidate salary data or close job openings.
+
+Template Customization: Creating a UI that allows users to edit offer letter templates directly in the browser rather than hard-coding the layout.
+
+Dashboard Analytics: Visualizing the "Time-to-Fill" and "Candidate Conversion" metrics on the home screen, which were cut for time.
+
+
+Production Readiness Considerations
+There are two areas I would address before a production launch:
+
+Error Handling: The current error handling is rudimentary. I would add centralized logging (e.g., Sentry) and more graceful user-facing error states for failed file generations or database timeouts.
+
+Security of Generated Assets: Currently, the system relies on transient URLs. In production, I would implement signed URLs that expire after a short duration to ensure that access to sensitive offer letters remains strictly controlled and private.
